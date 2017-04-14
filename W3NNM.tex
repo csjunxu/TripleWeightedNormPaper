@@ -256,7 +256,7 @@ Since the objective function is separable w.r.t. the two variables, the problem 
 \label{e11}
 \vspace{-3mm}
 \begin{split}
-\mathcal{L}(\mathbf{X},\mathbf{Z},\mathbf{A},\rho)
+\mathcal{L}(\mathbf{X},\mathbf{Z},\mathbf{\Delta},\rho)
 =
 &\|\mathbf{W}_{1}(\mathbf{Y}-\mathbf{X})\mathbf{W}_{2}\|_{F}^{2}
 +
@@ -265,17 +265,17 @@ Since the objective function is separable w.r.t. the two variables, the problem 
 &
 +
 \langle
-\mathbf{A},\mathbf{X}-\mathbf{Z}
+\mathbf{\Delta},\mathbf{X}-\mathbf{Z}
 \rangle
 +
 \frac{\rho}{2}
 \|\mathbf{X}-\mathbf{Z}\|_{F}^{2},
 \end{split}
 \end{equation}
-where $\mathbf{A}$ is the augmented Lagrangian multiplier and $\rho>0$ is the penalty parameter.\ We initialize the matrix variables $\mathbf{X}_{0}$, $\mathbf{Z}_{0}$, and $\mathbf{A}_{0}$ to be zero matrix and $\rho_{0}>0$ to be a suitable value.\ Denote by ($\mathbf{X}_{k}, \mathbf{Z}_{k}$) and $\mathbf{A}_{k}$ the optimization variables and Lagrange multiplier at iteration $k$ ($k=0,1,2,...$), respectively.\ By taking derivatives of the Lagrangian function $\mathcal{L}$ w.r.t. $\mathbf{X}$ and $\mathbf{Z}$ and setting the derivative function to be zero, we can alternatively update the variables as follows:
+where $\mathbf{\Delta}$ is the augmented Lagrangian multiplier and $\rho>0$ is the penalty parameter.\ We initialize the matrix variables $\mathbf{X}_{0}$, $\mathbf{Z}_{0}$, and $\mathbf{\Delta}_{0}$ to be zero matrix and $\rho_{0}>0$ to be a suitable value.\ Denote by ($\mathbf{X}_{k}, \mathbf{Z}_{k}$) and $\mathbf{\Delta}_{k}$ the optimization variables and Lagrange multiplier at iteration $k$ ($k=0,1,2,...$), respectively.\ By taking derivatives of the Lagrangian function $\mathcal{L}$ w.r.t. $\mathbf{X}$ and $\mathbf{Z}$ and setting the derivative function to be zero, we can alternatively update the variables as follows:
 \vspace{2mm}
 \\
-(1) \textbf{Update $\mathbf{X}$ while fixing $\mathbf{Z}$ and $\mathbf{A}$}:
+(1) \textbf{Update $\mathbf{X}$ while fixing $\mathbf{Z}$ and $\mathbf{\Delta}$}:
 \vspace{-2mm}
 \begin{equation}
 \label{e12}
@@ -284,31 +284,43 @@ where $\mathbf{A}$ is the augmented Lagrangian multiplier and $\rho>0$ is the pe
 \arg\min_{\mathbf{X}}
 \|\mathbf{W}_{1}(\mathbf{Y}-\mathbf{X})\mathbf{W}_{2}\|_{F}^{2} 
 +
-\frac{\rho_{k}}{2}\|\mathbf{X} - \mathbf{Z}_{k} + \rho_{k}^{-1}\mathbf{A}_{k}||_{F}^{2}.
+\frac{\rho_{k}}{2}\|\mathbf{X} - \mathbf{Z}_{k} + \rho_{k}^{-1}\mathbf{\Delta}_{k}||_{F}^{2}.
 \end{equation}
-This is a standard least squares regression problem with closed-form solution:
-\vspace{-2mm}
+This is a two sided weighted least squares regression problem with the solution satisfying that
 \begin{equation}
 \label{e13}
 \vspace{-2mm}
-\mathbf{X}_{k+1}
+\mathbf{A}\mathbf{X}
++
+\mathbf{X}\mathbf{B}
 =
-(\mathbf{W}^{\top}\mathbf{W}+\frac{\rho_{k}}{2}\mathbf{I})^{-1}
-(\mathbf{W}^{\top}\mathbf{W}\mathbf{Y} + \frac{\rho_{k}}{2}\mathbf{Z}_{k} -\frac{1}{2}\mathbf{A}_{k}).
+\mathbf{C},
 \end{equation}
+where $\mathbf{A}=\mathbf{W}_{1}^{\top}\mathbf{W}_{1}$, $\mathbf{B}=\frac{\rho_{k}}{2}(\mathbf{W}_{2}\mathbf{W}_{2}^{\top})^{-1}$, and $\mathbf{C}=\mathbf{W}_{1}^{\top}\mathbf{W}_{1}\mathbf{Y}+(\frac{\rho_{k}}{2}\mathbf{Z}_{k} -\frac{1}{2}\mathbf{\Delta}_{k})(\mathbf{W}_{2}\mathbf{W}_{2}^{\top})^{-1}$. This is a standard Sylvester equation which can be rewritten as 
+\begin{equation}
+\label{e13}
+\vspace{-2mm}
+(\mathbf{I}_{3p^2}\otimes\mathbf{A}
++
+\mathbf{B}^{\top}\otimes\mathbf{I}_{M})\text{vec}(\mathbf{X})
+=
+\text{vec}(\mathbf{C}),
+\end{equation}
+where $\mathbf{I}_{d}$ is the $d^2$ dimensional identity matrix, $\otimes$ is the Kronecker product, and $\text{vec}(\bullet)$ is the vec-operator. Since the eigenvalues of $\mathbf{A}$ and $-\mathbf{B}$ are clearly different, the above equation has a unique solution \cite{Bartels1972,simoncini2016computational}.
+\vspace{2mm}
 \\
-(2) \textbf{Update $\mathbf{Z}$ while fixing $\mathbf{X}$ and $\mathbf{A}$}:
+(2) \textbf{Update $\mathbf{Z}$ while fixing $\mathbf{X}$ and $\mathbf{\Delta}$}:
 \vspace{-2mm}
 \begin{equation}
 \label{e14}
 \mathbf{Z}_{k+1}
 =
 \arg\min_{\mathbf{Z}}\frac{\rho_{k}}{2}
-\|\mathbf{Z} - (\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{A}_{k})\|_{F}^{2}
+\|\mathbf{Z} - (\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{\Delta}_{k})\|_{F}^{2}
 +
 \|\mathbf{Z}\|_{\bm{w},*}.
 \end{equation}
-According to the Theorem 1 in \cite{wnnmijcv}, given the SVD of $\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{A}_{k}$, i.e., $\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{A}_{k}=\mathbf{U}_{k}\mathbf{\Sigma}_{k}\mathbf{V}_{k}^{\top}$, where 
+According to the Theorem 1 in \cite{wnnmijcv}, given the SVD of $\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{\Delta}_{k}$, i.e., $\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{\Delta}_{k}=\mathbf{U}_{k}\mathbf{\Sigma}_{k}\mathbf{V}_{k}^{\top}$, where 
 $\mathbf{\Sigma}_{k}=
 \left( \begin{array}{c}
 \text{diag}(\sigma_{1},\sigma_{2},...,\sigma_{M})
@@ -359,14 +371,14 @@ According to the Remark 1 in \cite{wnnmijcv}, the problem above has closed-form 
 where $c_{1}=\sigma_{i}-\epsilon$, $c_{2} = (\sigma_{i}-\epsilon)^{2}-\frac{8C}{\rho_{k}}$, $\epsilon>0$ is a small number, and $C$ is set as $\sqrt{2M}$ by experience in \cite{wnnmijcv}.
 \vspace{2mm}
  \\
-(3) \textbf{Update $\mathbf{A}$ while fixing $\mathbf{X}$ and $\mathbf{Z}$}:
+(3) \textbf{Update $\mathbf{\Delta}$ while fixing $\mathbf{X}$ and $\mathbf{Z}$}:
 \vspace{-3mm}
 \begin{equation}
 \label{e17}
 \vspace{-6mm}
-\mathbf{A}_{k+1}
+\mathbf{\Delta}_{k+1}
 =
-\mathbf{A}_{k} + \rho_{k}(\mathbf{X}_{k+1}-\mathbf{Z}_{k+1}).
+\mathbf{\Delta}_{k} + \rho_{k}(\mathbf{X}_{k+1}-\mathbf{Z}_{k+1}).
 \end{equation}
 \\
 (4) \textbf{Update $\rho_{k}$}: $\rho_{k+1}= \mu * \rho_{k}$, where $\mu>1$.
@@ -383,7 +395,7 @@ The above alternative updating steps are repeated until the convergence conditio
 \hline
 \textbf{Input:} Matrices $\mathbf{Y}$ and $\mathbf{W}$, $\mu>1$, $\text{Tol}>0$, $K_{1}$;
 \\
-\textbf{Initialization:} $\mathbf{X}_{0}=\mathbf{Z}_{0}=\mathbf{A}_{0}=\mathbf{0}$, $\rho_{0}>0$, \text{T} = \text{False},
+\textbf{Initialization:} $\mathbf{X}_{0}=\mathbf{Z}_{0}=\mathbf{\Delta}_{0}=\mathbf{0}$, $\rho_{0}>0$, \text{T} = \text{False},
 \\
 \quad \quad \quad \quad \quad \quad $k=0$; 
 \\
@@ -394,7 +406,7 @@ The above alternative updating steps are repeated until the convergence conditio
 $\mathbf{X}_{k+1}
 =
 (\mathbf{W}^{\top}\mathbf{W}+\frac{\rho_{k}}{2}\mathbf{I})^{-1}
-(\mathbf{W}^{\top}\mathbf{W}\mathbf{Y} + \frac{\rho_{k}}{2}\mathbf{Z}_{k} -\frac{1}{2}\mathbf{A}_{k})
+(\mathbf{W}^{\top}\mathbf{W}\mathbf{Y} + \frac{\rho_{k}}{2}\mathbf{Z}_{k} -\frac{1}{2}\mathbf{\Delta}_{k})
 $
 \\
 2. Update $\mathbf{Z}_{k+1}$ by solving the problem 
@@ -403,16 +415,16 @@ $
 \quad
 $
 \min_{\mathbf{Z}}\frac{\rho_{k}}{2}
-\|\mathbf{Z} - (\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{A}_{k})\|_{F}^{2}
+\|\mathbf{Z} - (\mathbf{X}_{k+1}+\rho_{k}^{-1}\mathbf{\Delta}_{k})\|_{F}^{2}
 +
 \|\mathbf{Z}\|_{\bm{w},*}
 $
 \\
-3. Update $\mathbf{A}_{k+1}$ as
+3. Update $\mathbf{\Delta}_{k+1}$ as
 $
-\mathbf{A}_{k+1}
+\mathbf{\Delta}_{k+1}
 =
-\mathbf{A}_{k} + \rho_{k}(\mathbf{X}_{k+1}-\mathbf{Z}_{k+1})
+\mathbf{\Delta}_{k} + \rho_{k}(\mathbf{X}_{k+1}-\mathbf{Z}_{k+1})
 $
 \\
 4. Update $\rho_{k+1}= \mu * \rho_{k}$;
@@ -437,7 +449,7 @@ $
 
 \begin{theorem}
 \label{th1}
-Assume that the weights in $\bm{w}$ are in a non-descending order, the sequences $\{\mathbf{X}_{k}\}$, $\{\mathbf{Z}_{k}\}$, and $\{\mathbf{A}_{k}\}$ generated in Algorithm 1 satisfy:
+Assume that the weights in $\bm{w}$ are in a non-descending order, the sequences $\{\mathbf{X}_{k}\}$, $\{\mathbf{Z}_{k}\}$, and $\{\mathbf{\Delta}_{k}\}$ generated in Algorithm 1 satisfy:
 \begin{align}
 &(a) \lim_{k \to \infty} \|\mathbf{X}_{k+1}-\mathbf{Z}_{k+1}\|_{F}=0;
 \\
@@ -449,7 +461,7 @@ Assume that the weights in $\bm{w}$ are in a non-descending order, the sequences
 \begin{proof}
 We give a sketch proof here and detailed proof of this theorem can be found in supplementary file. 
 
-We first prove that the sequence $\{\mathbf{A}_{k}\}$ generated by Algorithm 1 is upper bounded.\ Since $\{\rho_{k}\}$ is unbounded, i.e., $\lim_{k\to\infty}{\rho_{k}}=+\infty$, we can prove that the sequence of Lagrangian function $\{\mathcal{L}(\mathbf{X}_{k+1},\mathbf{Z}_{k+1},\mathbf{A}_{k},\rho_{k})\}$ is also upper bounded.\ Hence, both $\{\mathbf{W}(\mathbf{Y}-\mathbf{X}_{k})\}$ and $\{\mathbf{Z}_{k}\}$ are upper bounded.\ Then $\{\mathbf{X}_{k}\}$ is also upper bounded.\ According to Eq.\ (\ref{e17}), we can prove that 
+We first prove that the sequence $\{\mathbf{\Delta}_{k}\}$ generated by Algorithm 1 is upper bounded.\ Since $\{\rho_{k}\}$ is unbounded, i.e., $\lim_{k\to\infty}{\rho_{k}}=+\infty$, we can prove that the sequence of Lagrangian function $\{\mathcal{L}(\mathbf{X}_{k+1},\mathbf{Z}_{k+1},\mathbf{\Delta}_{k},\rho_{k})\}$ is also upper bounded.\ Hence, both $\{\mathbf{W}(\mathbf{Y}-\mathbf{X}_{k})\}$ and $\{\mathbf{Z}_{k}\}$ are upper bounded.\ Then $\{\mathbf{X}_{k}\}$ is also upper bounded.\ According to Eq.\ (\ref{e17}), we can prove that 
 $
 \lim_{k \to \infty} 
 \|
@@ -461,9 +473,9 @@ $
 \lim_{k \to \infty} 
 \rho_{k}^{-1}
 \|
-\mathbf{A}_{k+1}
+\mathbf{\Delta}_{k+1}
 -
-\mathbf{A}_{k}
+\mathbf{\Delta}_{k}
 \|_{F}
 =
 0
@@ -488,11 +500,11 @@ $
 \mathbf{W}^{\top}\mathbf{W}\mathbf{Z}_{k}
 -
 \frac{1}{2}
-\mathbf{A}_{k})
+\mathbf{\Delta}_{k})
 \|_{F}
 +
 \rho_{k}^{-1}\|
-\mathbf{A}_{k}-\mathbf{A}_{k-1}
+\mathbf{\Delta}_{k}-\mathbf{\Delta}_{k-1}
 \|_{F})
 =
 0
@@ -511,16 +523,16 @@ $
 \|_{F}
 +
 \|
-\rho_{k-1}^{-1}\mathbf{A}_{k-1}
+\rho_{k-1}^{-1}\mathbf{\Delta}_{k-1}
 +
-\rho_{k}^{-1}\mathbf{A}_{k+1}
+\rho_{k}^{-1}\mathbf{\Delta}_{k+1}
 -
-\rho_{k}^{-1}\mathbf{A}_{k}
+\rho_{k}^{-1}\mathbf{\Delta}_{k}
 \|_{F})
 =
 0,
 $
-where $\mathbf{U}_{k-1}\mathbf{\Sigma}_{k-1}\mathbf{V}_{k-1}^{\top}$ is the SVD of $\mathbf{X}_{k}+\rho_{k-1}^{-1}\mathbf{A}_{k-1}$
+where $\mathbf{U}_{k-1}\mathbf{\Sigma}_{k-1}\mathbf{V}_{k-1}^{\top}$ is the SVD of $\mathbf{X}_{k}+\rho_{k-1}^{-1}\mathbf{\Delta}_{k-1}$
 .
 \end{proof}
 
