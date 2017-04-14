@@ -284,7 +284,7 @@ where $\mathbf{\Delta}$ is the augmented Lagrangian multiplier and $\rho>0$ is t
 \arg\min_{\mathbf{X}}
 \|\mathbf{W}_{1}(\mathbf{Y}-\mathbf{X})\mathbf{W}_{2}\|_{F}^{2} 
 +
-\frac{\rho_{k}}{2}\|\mathbf{X} - \mathbf{Z}_{k} + \rho_{k}^{-1}\mathbf{\Delta}_{k}||_{F}^{2}.
+\frac{\rho_{k}}{2}\|\mathbf{X} - \mathbf{Z}_{k} + \frac{1}{\rho_{k}}\mathbf{\Delta}_{k}||_{F}^{2}.
 \end{equation}
 This is a two sided weighted least squares regression problem with the solution satisfying that
 \begin{equation}
@@ -401,13 +401,7 @@ The above alternative updating steps are repeated until the convergence conditio
 \\
 \textbf{While} (\text{T} == \text{false}) \textbf{do}
 \\
-1. Update $\mathbf{X}_{k+1}$ as 
-\\
-$\mathbf{X}_{k+1}
-=
-(\mathbf{W}^{\top}\mathbf{W}+\frac{\rho_{k}}{2}\mathbf{I})^{-1}
-(\mathbf{W}^{\top}\mathbf{W}\mathbf{Y} + \frac{\rho_{k}}{2}\mathbf{Z}_{k} -\frac{1}{2}\mathbf{\Delta}_{k})
-$
+1. Update $\mathbf{X}_{k+1}$ by solving the Sylvester equation (\ref{e13});
 \\
 2. Update $\mathbf{Z}_{k+1}$ by solving the problem 
 \\
